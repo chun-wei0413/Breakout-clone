@@ -69,7 +69,7 @@ function drawing() {
   // 移动和绘制小球
   ball2.move();
   ball2.draw("#FF0000");
-  // 绘制条
+  // 绘制条//
   bar1.draw("#FF0000");
 }
 
