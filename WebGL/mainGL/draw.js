@@ -53,7 +53,6 @@ let ball1 = new Ball(canvas.width / 2, canvas.height - 30, 1, -1, 10);
 let ball2 = new Ball(canvas.width / 2, canvas.height - 10, -1, 1, 10);
 
 let bar1 = new bar(canvas.width / 2, canvas.height - 30, 1, -1);
-let bar2 = new bar(canvas.width / 3, canvas.height - 100, 1, -1);
 function drawing() {
   // 清空画布
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -72,7 +71,6 @@ function drawing() {
   ball2.draw("#FF0000");
   // 绘制条
   bar1.draw("#FF0000");
-  bar2.draw("#000000");
 }
 
 setInterval(drawing, 10); // 定时刷新
