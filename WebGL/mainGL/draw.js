@@ -1,6 +1,65 @@
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
-//Ball 物件描述
+
+
+// Paddle 物件描述
+class Paddle {
+  constructor(x, y, length, width) {
+    this.x = x;
+    this.y = y;
+    this.length = length;
+    this.width = width;
+  }
+
+  draw(color) {
+    ctx.beginPath();
+    ctx.rect(this.x, this.y, this.length, this.width);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  move(mouseX) {
+    // 移動 paddle 的 x 座標至滑鼠的 x 座標
+    this.x = mouseX - this.length / 2;
+
+    // 防止 paddle 超出 canvas 邊界
+    if (this.x < 0) {
+      this.x = 0;
+    } else if (this.x + this.length > canvas.width) {
+      this.x = canvas.width - this.length;
+    }
+  }
+  //paddle與球碰撞
+  collide(ball) {
+    if (
+      ball.x + ball.radius >= this.x &&
+      ball.x - ball.radius <= this.x + this.length &&
+      ball.y + ball.radius >= this.y &&
+      ball.y - ball.radius <= this.y + this.width
+    ) {
+      ball.dy = -ball.dy; // 球反彈
+    }
+  }
+}
+
+// 建立 paddle 物件
+let paddle = new Paddle(canvas.width / 2 - 50, canvas.height - 100, 100, 10);
+
+// 監聽滑鼠移動事件
+canvas.addEventListener("mousemove", (event) => {
+  // 計算滑鼠相對於 canvas 的 x 座標
+  let mouseX = event.clientX - canvas.getBoundingClientRect().left;
+  
+  // 移動 paddle
+  paddle.move(mouseX);
+});
+//當按下左鍵時改變 isBallLaunched
+canvas.addEventListener("mousedown", () => {
+  isBallLaunched = true;
+});
+
+//main Ball 物件描述
 class Ball {
   constructor(x, y, dx, dy, radius) {
     this.x = x;
@@ -26,12 +85,20 @@ class Ball {
       this.dy = -this.dy;
     }
   }
-
+ 
+  // 修改 move 函數，如果球還未發射，則讓球的 y 座標保持在 paddle 上方
   move() {
+    if (!isBallLaunched) {
+      this.x = paddle.x + paddle.length / 2;
+      this.y = paddle.y - this.radius;
+      return;
+    }
+
     this.x += this.dx;
     this.y += this.dy;
   }
 }
+
 //Bar 物件描述
 class Bar {
   constructor(x, y, dx, dy, length, width) {
@@ -69,13 +136,28 @@ class Bar {
 //建立ball物件
 let balls = [];
 let ballHeight = 50;
+let isBallLaunched = false;
+// 創建球的函數
+function createBall() {
+  let randomX = Math.random() * 20;
+  let dx = 2.5 * Math.pow(-1, 1);
+  let dy = -2.5 * Math.pow(-1, 1);
+
+  // 如果球還沒發射，則起始 y 座標為 paddle 上方
+  let startY = isBallLaunched ? canvas.height - ballHeight : paddle.y - ballHeight;
+   
+  balls.push(new Ball(paddle.x + paddle.length / 2, startY, dx, dy, 10));
+}
+createBall();
+/*
 //此迴圈i可以控制球的數量
-for(let i = 1; i <= 10; i++){   
+for(let i = 1; i <= 1; i++){   
   let randomX = Math.random() * 20; // 產生 0 到 700 之間的隨機數
   let dx = 2.5 * Math.pow(-1, i); // 將 2.5 乘上 -1 的 i 次方，產生不同方向
   let dy = -2.5 * Math.pow(-1, i); // 將 -2.5 乘上 -1 的 i 次方，產生不同方向
   balls.push(new Ball(canvas.width / randomX, canvas.height - ballHeight*i, dx, dy, 10));
-}
+}*/
+
 //磚塊物件的相對位置座標
 let barLength = 100;
 let barHeigth = 700;
@@ -106,7 +188,13 @@ for (let i = 1; i <= 8; i++) {
 }
 
 
+
 function CollisionAmongObject() {
+  // 检测球和 paddle 的碰撞
+  for (let i = 0; i < balls.length; i++) {
+    let ball = balls[i];
+    paddle.collide(ball);
+  }
   // 检测球之间的相撞
   for (let i = 0; i < balls.length; i++) {
     for (let j = i + 1; j < balls.length; j++) {
@@ -151,6 +239,7 @@ function CollisionAmongObject() {
         let { row, index } = barsToRemove[m];
         bars[row].splice(index, 1);
       }
+
     }
   }
 }
@@ -169,7 +258,8 @@ function drawing() {
     balls[i].move();
     balls[i].draw(colors[i]);
   }
-
+  // 繪製 paddle
+  paddle.draw("#000000");
   // 顯示地圖所有磚塊
   for(let i=0; i<bars.length; i++){
     for (let j = 0; j < bars[i].length; j++) {
