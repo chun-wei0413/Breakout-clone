@@ -173,7 +173,7 @@ class Ball {
     if (!isBallLaunched) {
       this.x = paddle.x + paddle.length / 2;
       // Y軸留點距離，因為太近會影響初始碰撞判定
-      this.y = paddle.y - this.radius - 5;
+      this.y = paddle.y - this.radius - 10;
       return;
     }
 
