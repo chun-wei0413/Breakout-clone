@@ -55,7 +55,7 @@ class Star {
     this.size = size;
     this.dy = 2; // 星星下降的速度
   }
-
+  //參考網址 https://juejin.cn/post/6844904193942093832
   draw() {
     // 繪製星星
     ctx.beginPath();
@@ -76,8 +76,10 @@ class Star {
     ctx.closePath();
 
     ctx.fillStyle = '#E4EF00';
-    ctx.strokeStyle = "red";
+    ctx.strokeStyle = "#000000";
     ctx.fill();
+    //繪製外框
+    ctx.stroke();
   }
 
   move() {
