@@ -1,7 +1,8 @@
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
 
-
+let isBallLaunched = false;
+//let isStarGenerated = false;
 // Paddle 物件描述
 class Paddle {
   constructor(x, y, length, width) {
@@ -45,6 +46,71 @@ class Paddle {
 
 // 建立 paddle 物件
 let paddle = new Paddle(canvas.width / 2 - 50, canvas.height - 100, 100, 10);
+
+//建立星星物件
+class Star {
+  constructor(x, y, size) {
+    this.x = x;
+    this.y = y;
+    this.size = size;
+    this.dy = 2; // 星星下降的速度
+  }
+
+  draw() {
+    // 繪製星星
+    ctx.beginPath();
+    var horn = 5; // 画5个角
+    var angle = 360/horn; // 五个角的度数
+    // 两个圆的半径
+    var R = 50;
+    var r = 20;
+    // 坐标
+    for (var i = 0; i < horn; i++) {
+        // 角度转弧度：角度/180*Math.PI
+        // 外圆顶点坐标
+        ctx.lineTo(Math.cos((18 + i * angle) / 180 * Math.PI) * R + this.x, -Math.sin((18 + i * angle) / 180 * Math.PI) * R + this.y);
+        // 內圆顶点坐标
+        ctx.lineTo(Math.cos((54 + i * angle) / 180 * Math.PI) * r + this.x, -Math.sin((54 + i * angle) / 180 * Math.PI) * r + this.y);
+    }
+    // closePath：关闭路径，将路径的终点与起点相连
+    ctx.closePath();
+
+    ctx.fillStyle = '#E4EF00';
+    ctx.strokeStyle = "red";
+    ctx.fill();
+  }
+
+  move() {
+    // 星星往下移動
+    this.y += this.dy;
+  }
+
+  collide(paddle) {
+    // 檢測星星與Paddle的碰撞
+    if (
+      this.x + this.size >= paddle.x &&
+      this.x - this.size <= paddle.x + paddle.length &&
+      this.y + this.size >= paddle.y &&
+      this.y - this.size <= paddle.y + paddle.width
+    ) {
+      //星星碰到paddle會變色
+      paddle.draw("#0000FF");
+      // Paddle的length加長50，但不超過某個最大值（例如，canvas.width - 10）
+      if(paddle.length <= 150){
+        paddle.length += 50;
+        // 設定五秒後恢復原狀
+        setTimeout(() => {
+          paddle.length -= 50;
+        }, 5000);
+      }
+      // 移除碰撞的星星
+      stars.splice(stars.indexOf(this), 1);
+    }
+  }
+
+}
+
+let stars = [];  //存放星星的陣列
 
 // 監聽滑鼠移動事件
 canvas.addEventListener("mousemove", (event) => {
@@ -132,16 +198,45 @@ class Bar {
       this.dy = -this.dy;
     }
   }
+  collide1(ball) {
+    if (
+      ball.x + ball.radius >= this.x &&
+      ball.x - ball.radius <= this.x + this.length &&
+      ball.y + ball.radius >= this.y &&
+      ball.y - ball.radius <= this.y + this.width
+    ) {
+      // 找到碰撞的 bar，並將其從陣列中移除
+      for (let i = 0; i < bars.length; i++) {
+        for (let j = 0; j < bars[i].length; j++) {
+          if (bars[i][j] === this) {
+            // 移除這個 bar
+            bars[i].splice(j, 1);
+
+            // 球反彈
+            ball.dy = -ball.dy;
+
+            // 25% 的機率掉落星星
+            if (Math.random() < 0.5) {
+              let star = new Star(this.x + this.length / 2, this.y + this.width / 2, 20);
+              stars.push(star);
+            }
+
+            return; // 當找到並移除 bar 時，結束迴圈
+          }
+        }
+      }
+    }
+  }
 }
 //建立ball物件
 let balls = [];
 let ballHeight = 50;
-let isBallLaunched = false;
+
 // 創建球的函數
 function createBall() {
   let randomX = Math.random() * 20;
-  let dx = 2.5 * Math.pow(-1, 1);
-  let dy = -2.5 * Math.pow(-1, 1);
+  let dx = 5 * Math.pow(-1, 1);
+  let dy = -5 * Math.pow(-1, 1);
 
   // 如果球還沒發射，則起始 y 座標為 paddle 上方
   let startY = isBallLaunched ? canvas.height - ballHeight : paddle.y - ballHeight;
@@ -190,58 +285,45 @@ for (let i = 1; i <= 8; i++) {
 
 
 function CollisionAmongObject() {
-  // 检测球和 paddle 的碰撞
-  for (let i = 0; i < balls.length; i++) {
-    let ball = balls[i];
-    paddle.collide(ball);
-  }
-  // 检测球之间的相撞
-  for (let i = 0; i < balls.length; i++) {
-    for (let j = i + 1; j < balls.length; j++) {
-      let ball1 = balls[i];
-      let ball2 = balls[j];
-      let distanceX = ball1.x - ball2.x;
-      let distanceY = ball1.y - ball2.y;
-      let distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
-
-      if (distance < ball1.radius + ball2.radius) {
-        // 两球相撞，交换它们的速度
-        let tempDx = ball1.dx;
-        let tempDy = ball1.dy;
-        ball1.dx = ball2.dx;
-        ball1.dy = ball2.dy;
-        ball2.dx = tempDx;
-        ball2.dy = tempDy;
-      }
+    // 检测球和 paddle 的碰撞
+    for(let i =0; i < stars.length; i++){
+      let star = stars[i];
+      star.collide(paddle);
     }
+    
+    for (let i = 0; i < balls.length; i++) {
+      let ball = balls[i];
+      paddle.collide(ball);
+    }
+    // 检测球之间的相撞
+    for (let i = 0; i < balls.length; i++) {
+      for (let j = i + 1; j < balls.length; j++) {
+        let ball1 = balls[i];
+        let ball2 = balls[j];
+        let distanceX = ball1.x - ball2.x;
+        let distanceY = ball1.y - ball2.y;
+        let distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
 
-    // 检测球与Bar的碰撞
-    let ball = balls[i];
-    for (let k = 0; k < bars.length; k++) {
-      let barsToRemove = [];
-      for (let j = 0; j < bars[k].length; j++) {
-        let bar = bars[k][j];
-
-        if (
-          ball.x + ball.radius >= bar.x &&
-          ball.x - ball.radius <= bar.x + bar.length &&
-          ball.y + ball.radius >= bar.y &&
-          ball.y - ball.radius <= bar.y + bar.width
-        ) {
-          // 球与bar碰撞时，标记Bar以便移除
-          barsToRemove.push({ row: k, index: j });
-          ball.dy = -ball.dy;
+        if (distance < ball1.radius + ball2.radius) {
+          // 两球相撞，交换它们的速度
+          let tempDx = ball1.dx;
+          let tempDy = ball1.dy;
+          ball1.dx = ball2.dx;
+          ball1.dy = ball2.dy;
+          ball2.dx = tempDx;
+          ball2.dy = tempDy;
         }
       }
 
-      // 移除碰撞的Bar
-      for (let m = barsToRemove.length - 1; m >= 0; m--) {
-        let { row, index } = barsToRemove[m];
-        bars[row].splice(index, 1);
+      // 检测球与Bar的碰撞
+      let ball = balls[i];
+      for (let k = 0; k < bars.length; k++) {
+        for (let j = 0; j < bars[k].length; j++) {
+          let bar = bars[k][j];
+          bar.collide1(ball);
+        }
       }
-
-    }
-  }
+    } 
 }
 
 //可以拿來控制球的顏色
@@ -257,6 +339,12 @@ function drawing() {
     balls[i].collide();
     balls[i].move();
     balls[i].draw(colors[i]);
+  }
+  // 繪製star
+  // 處理球與畫布間的碰撞
+  for (let i = 0; i < stars.length; i++) {
+    stars[i].move();
+    stars[i].draw();
   }
   // 繪製 paddle
   paddle.draw("#000000");
