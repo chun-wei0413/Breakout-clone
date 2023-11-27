@@ -1,8 +1,15 @@
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
 
+
+//當按鈕被點擊時，restartGame 函數會被調用，這個函數將重新初始化遊戲相關的變數
+document.getElementById("restartButton").addEventListener("click", restartGame);
+//檢查左鍵是否按下發射球
 let isBallLaunched = false;
+//檢查是否在吃星星的狀態
 let isStarState = false;
+//檢查遊戲是否結束
+let isGameOver = false;
 // Paddle 物件描述
 class Paddle {
   constructor(x, y, length, width) {
@@ -45,8 +52,9 @@ class Paddle {
 }
 
 // 建立 paddle 物件
-let paddle = new Paddle(canvas.width / 2 - 50, canvas.height - 100, 100, 10);
-
+let paddle = new Paddle(canvas.width / 2 - 50, canvas.height - 150, 100, 10);
+//用來設定每次撿到星星重新計時
+let starEffectTimeout;
 //建立星星物件
 class Star {
   constructor(x, y, size) {
@@ -101,7 +109,9 @@ class Star {
         paddle.length += 50;
         isStarState = true;
         // 設定五秒後恢復原狀
-        setTimeout(() => {
+        // 每次碰撞都重新計時
+        clearTimeout(starEffectTimeout);
+        starEffectTimeout = setTimeout(() => {
           paddle.length -= 50;
           isStarState = false;
         }, 5000);
@@ -150,8 +160,11 @@ class Ball {
     if ((this.x + this.radius) >= canvas.width || (this.x - this.radius) <= 0) {
       this.dx = -this.dx;
     }
-    if ((this.y + this.radius) >= canvas.height || (this.y - this.radius) <= 0) {
+    if ((this.y - this.radius) <= 0) {
       this.dy = -this.dy;
+    }else if((this.y + this.radius) >= canvas.height){
+      //碰到遊戲視窗下方就結束
+      isGameOver = true;
     }
   }
  
@@ -159,7 +172,8 @@ class Ball {
   move() {
     if (!isBallLaunched) {
       this.x = paddle.x + paddle.length / 2;
-      this.y = paddle.y - this.radius;
+      // Y軸留點距離，因為太近會影響初始碰撞判定
+      this.y = paddle.y - this.radius - 5;
       return;
     }
 
@@ -234,27 +248,31 @@ class Bar {
 //建立ball物件
 let balls = [];
 let ballHeight = 50;
- 
+//先產生一顆主球
+balls.push(new Ball(0, 0, 2.5, 2.5, 10));
 // 創建球的函數
-function createBall() {
+/*function createBall() {
   let randomX = Math.random() * 20;
   //let dx = 5 * Math.pow(-1, 1);
   //let dy = -5 * Math.pow(-1, 1);
-  let dx = -5,dy = 5;
+  let dx = 5,dy = 5;
   // 如果球還沒發射，則起始 y 座標為 paddle 上方
-  let startY = isBallLaunched ? canvas.height - ballHeight : paddle.y - ballHeight;
+  let startY = isBallLaunched ? canvas.height - ballHeight: paddle.y - ballHeight;
    
   balls.push(new Ball(paddle.x + paddle.length / 2, startY, dx, dy, 10));
 }
 createBall();
-/*
+*/
+
 //此迴圈i可以控制球的數量
-for(let i = 1; i <= 1; i++){   
-  let randomX = Math.random() * 20; // 產生 0 到 700 之間的隨機數
-  let dx = 2.5 * Math.pow(-1, i); // 將 2.5 乘上 -1 的 i 次方，產生不同方向
-  let dy = -2.5 * Math.pow(-1, i); // 將 -2.5 乘上 -1 的 i 次方，產生不同方向
-  balls.push(new Ball(canvas.width / randomX, canvas.height - ballHeight*i, dx, dy, 10));
-}*/
+/*
+  for(let i = 1; i <= 5; i++){   
+    //let randomX = Math.random() * 20; // 產生 0 到 700 之間的隨機數
+    let dx = 2.5 * Math.pow(-1, i); // 將 2.5 乘上 -1 的 i 次方，產生不同方向
+    let dy = -2.5 * Math.pow(-1, i); // 將 -2.5 乘上 -1 的 i 次方，產生不同方向
+    balls.push(new Ball(canvas.width/2, canvas.height - ballHeight*i, dx, dy, 10));
+  }
+*/
 
 //磚塊物件的相對位置座標
 let barLength = 100;
@@ -341,6 +359,13 @@ function changePaddleColor() {
 // 設定每 1000 毫秒執行一次 changePaddleColor 函數
 setInterval(changePaddleColor, 1000);
 function drawing() {
+  if(isGameOver){
+    printGameOver();
+    //防止paddle結束時還有殘影
+    paddle = null;
+    //停止interval執行
+    clearInterval(interval);
+  }
   // 即時清空畫布
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   //處理物件之間的碰撞
@@ -374,4 +399,16 @@ function drawing() {
   }
 }
 
+function restartGame() {
+  // 重置遊戲相關變數
+  isGameOver = false;
+  document.location.reload();
+
+}
+function printGameOver(){
+  // 遊戲結束時繪製標誌
+  ctx.font = "30px Arial";
+  ctx.fillStyle = "#FF0000";
+  ctx.fillText("GAME OVER", canvas.width / 2 - 100 , canvas.height / 2);
+}
 setInterval(drawing, 10); // 定时刷新
