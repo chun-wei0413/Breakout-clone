@@ -67,28 +67,47 @@ class Bar {
   }
 }
 
-let ball1 = new Ball(canvas.width / 2, canvas.height - 100, 1, -5, 25);
-let ball2 = new Ball(canvas.width / 2, canvas.height - 300, -1, 4, 25);
+let ball1 = new Ball(canvas.width / 2, canvas.height - 100, 5, -5, 25);
+let ball2 = new Ball(canvas.width / 2, canvas.height - 300, -5, 5, 25);
 
-//你好
-//你好
-// 生成多个 bar
-let bars = [
-  new Bar(canvas.width / 4, canvas.height - 50, 2, 0, 100, 10),
-  new Bar(canvas.width / 4, canvas.height - 550, -1, 0, 80, 10),
-  new Bar(canvas.width / 4, canvas.height - 530, -1, 0, 80, 10),
-  new Bar(canvas.width / 4, canvas.height - 510, -1, 0, 80, 10),
-  // Add more bars as needed
-];
+//磚塊物件的相對位置座標
+let barLength = 100;
+let barHeigth = 700;
+//高度倍數
+let heigthMultiple = 20;
+// 地圖磚塊物件
+let bars = [];
+
+// 用2D array快速建立磚塊物件
+for (let i = 1; i <= 8; i++) {
+  let row = [];
+
+  // 循環每一行中的物件
+  for (let j = 1; j <= 6; j++) {
+    let bar = new Bar(
+      canvas.width - (9 - i) * barLength,
+      canvas.height - barHeigth - heigthMultiple * j,
+      -1,
+      0,
+      80,
+      10
+    );
+    row.push(bar);
+  }
+
+  // 將一行的物件加入到 bars 陣列中
+  bars.push(row);
+}
+
 
 function CollisionAmongObject() {
-  // 检测球之间的碰撞
+  // 檢測球之間的相撞
   let distanceX = ball1.x - ball2.x;
   let distanceY = ball1.y - ball2.y;
   let distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
 
   if (distance < ball1.radius + ball2.radius) {
-    // 两球相撞，交换它们的速度
+    // 兩球相撞，交換他們速度
     let tempDx = ball1.dx;
     let tempDy = ball1.dy;
     ball1.dx = ball2.dx;
@@ -96,58 +115,70 @@ function CollisionAmongObject() {
     ball2.dx = tempDx;
     ball2.dy = tempDy;
   }
-
-  // 检测球与条的碰撞
+ 
+  // 检测球与Bar的碰撞
   for (let i = 0; i < bars.length; i++) {
-    let bar = bars[i];
-    if (
-      ball1.x + ball1.radius > bar.x &&
-      ball1.x - ball1.radius < bar.x + bar.length &&
-      ball1.y + ball1.radius > bar.y &&
-      ball1.y - ball1.radius < bar.y + bar.width
-    ) {
-      // 球1与条碰撞，反弹，并移除条
-      ball1.dy = -ball1.dy;
-      if(i!=0)//mainBar不能刪
-        bars.splice(i, 1);
+    //用一陣列檢測被移除的bar
+    let barsToRemove = [];
+
+    for (let j = 0; j < bars[i].length; j++) {
+      let bar = bars[i][j];
+
+      // 碰撞检测
+      //一定要>=或<= 不然碰撞判定容易一次撞掉多個bar
+      if (
+        ball1.x + ball1.radius >= bar.x &&
+        ball1.x - ball1.radius <= bar.x + bar.length &&
+        ball1.y + ball1.radius >= bar.y &&
+        ball1.y - ball1.radius <= bar.y + bar.width
+      ) {
+        // 球1与bar碰撞时，标记Bar以便移除
+        barsToRemove.push(j);
+        ball1.dy = -ball1.dy;
+      }
+
+      if (
+        ball2.x + ball2.radius >= bar.x &&
+        ball2.x - ball2.radius <= bar.x + bar.length &&
+        ball2.y + ball2.radius >= bar.y &&
+        ball2.y - ball2.radius <= bar.y + bar.width
+      ) {
+        // 球2与bar碰撞时，标记Bar以便移除
+        barsToRemove.push(j);
+        ball2.dy = -ball2.dy;
+      }
     }
 
-    if (
-      ball2.x + ball2.radius > bar.x &&
-      ball2.x - ball2.radius < bar.x + bar.length &&
-      ball2.y + ball2.radius > bar.y &&
-      ball2.y - ball2.radius < bar.y + bar.width
-    ) {
-      // 球2与条碰撞，反弹，并移除条
-      ball2.dy = -ball2.dy;
-      if(i!=0)//mainBar不能刪
-        bars.splice(i, 1);
+    // 移除碰撞的Bar
+    for (let k = barsToRemove.length - 1; k >= 0; k--) {
+      bars[i].splice(barsToRemove[k], 1);
     }
   }
 }
 
 function drawing() {
-  // 清空画布
+  // 即時清空畫布
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // 处理小球碰撞
+  //處理物件之間的碰撞
+  CollisionAmongObject();
+  // 處理球與畫布間的碰撞
   ball1.collide();
   ball2.collide();
-  CollisionAmongObject();
-
-  // 移动和绘制小球
+  // 繪製與移動球
   ball1.move();
   ball1.draw("#000000");
 
-  // 移动和绘制小球
   ball2.move();
   ball2.draw("#FF0000");
+  
 
-  // 绘制所有的条
-  for (let i = 0; i < bars.length; i++) {
-    bars[i].collide();
-    bars[i].move();
-    bars[i].draw("#000000");
+  // 顯示地圖所有磚塊
+  for(let i=0; i<bars.length; i++){
+    for (let j = 0; j < bars[i].length; j++) {
+      bars[i][j].collide();
+      //bars[i][j].move();
+      bars[i][j].draw("#000000");
+    }
   }
 }
 
