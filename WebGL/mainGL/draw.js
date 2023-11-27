@@ -1,6 +1,6 @@
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
-
+//Ball 物件描述
 class Ball {
   constructor(x, y, dx, dy, radius) {
     this.x = x;
@@ -32,7 +32,7 @@ class Ball {
     this.y += this.dy;
   }
 }
-
+//Bar 物件描述
 class Bar {
   constructor(x, y, dx, dy, length, width) {
     this.x = x;
@@ -66,10 +66,16 @@ class Bar {
     }
   }
 }
+//建立ball物件
+//let ball1 = new Ball(canvas.width / 2, canvas.height - 100, 5, -5, 25);
+//let ball2 = new Ball(canvas.width / 2, canvas.height - 300, -5, 5, 25);
 
-let ball1 = new Ball(canvas.width / 2, canvas.height - 100, 5, -5, 25);
-let ball2 = new Ball(canvas.width / 2, canvas.height - 300, -5, 5, 25);
-
+let balls = [];
+let ballHeight = 100;
+//此迴圈i可以控制球的數量
+for(let i = 1; i <= 2; i++){
+  balls.push(new Ball(canvas.width / 2, canvas.height - ballHeight*i, 2.5, -2.5, 25));
+}
 //磚塊物件的相對位置座標
 let barLength = 100;
 let barHeigth = 700;
@@ -101,60 +107,56 @@ for (let i = 1; i <= 8; i++) {
 
 
 function CollisionAmongObject() {
-  // 檢測球之間的相撞
-  let distanceX = ball1.x - ball2.x;
-  let distanceY = ball1.y - ball2.y;
-  let distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+  // 检测球之间的相撞
+  for (let i = 0; i < balls.length; i++) {
+    for (let j = i + 1; j < balls.length; j++) {
+      let ball1 = balls[i];
+      let ball2 = balls[j];
+      let distanceX = ball1.x - ball2.x;
+      let distanceY = ball1.y - ball2.y;
+      let distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
 
-  if (distance < ball1.radius + ball2.radius) {
-    // 兩球相撞，交換他們速度
-    let tempDx = ball1.dx;
-    let tempDy = ball1.dy;
-    ball1.dx = ball2.dx;
-    ball1.dy = ball2.dy;
-    ball2.dx = tempDx;
-    ball2.dy = tempDy;
-  }
- 
-  // 检测球与Bar的碰撞
-  for (let i = 0; i < bars.length; i++) {
-    //用一陣列檢測被移除的bar
-    let barsToRemove = [];
-
-    for (let j = 0; j < bars[i].length; j++) {
-      let bar = bars[i][j];
-
-      // 碰撞检测
-      //一定要>=或<= 不然碰撞判定容易一次撞掉多個bar
-      if (
-        ball1.x + ball1.radius >= bar.x &&
-        ball1.x - ball1.radius <= bar.x + bar.length &&
-        ball1.y + ball1.radius >= bar.y &&
-        ball1.y - ball1.radius <= bar.y + bar.width
-      ) {
-        // 球1与bar碰撞时，标记Bar以便移除
-        barsToRemove.push(j);
-        ball1.dy = -ball1.dy;
-      }
-
-      if (
-        ball2.x + ball2.radius >= bar.x &&
-        ball2.x - ball2.radius <= bar.x + bar.length &&
-        ball2.y + ball2.radius >= bar.y &&
-        ball2.y - ball2.radius <= bar.y + bar.width
-      ) {
-        // 球2与bar碰撞时，标记Bar以便移除
-        barsToRemove.push(j);
-        ball2.dy = -ball2.dy;
+      if (distance < ball1.radius + ball2.radius) {
+        // 两球相撞，交换它们的速度
+        let tempDx = ball1.dx;
+        let tempDy = ball1.dy;
+        ball1.dx = ball2.dx;
+        ball1.dy = ball2.dy;
+        ball2.dx = tempDx;
+        ball2.dy = tempDy;
       }
     }
 
-    // 移除碰撞的Bar
-    for (let k = barsToRemove.length - 1; k >= 0; k--) {
-      bars[i].splice(barsToRemove[k], 1);
+    // 检测球与Bar的碰撞
+    let ball = balls[i];
+    for (let k = 0; k < bars.length; k++) {
+      let barsToRemove = [];
+      for (let j = 0; j < bars[k].length; j++) {
+        let bar = bars[k][j];
+
+        if (
+          ball.x + ball.radius >= bar.x &&
+          ball.x - ball.radius <= bar.x + bar.length &&
+          ball.y + ball.radius >= bar.y &&
+          ball.y - ball.radius <= bar.y + bar.width
+        ) {
+          // 球与bar碰撞时，标记Bar以便移除
+          barsToRemove.push({ row: k, index: j });
+          ball.dy = -ball.dy;
+        }
+      }
+
+      // 移除碰撞的Bar
+      for (let m = barsToRemove.length - 1; m >= 0; m--) {
+        let { row, index } = barsToRemove[m];
+        bars[row].splice(index, 1);
+      }
     }
   }
 }
+
+//可以拿來控制球的顏色
+let colors = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF", "#FFA500", "#A52A2A", "#008000", "#800080"];
 
 function drawing() {
   // 即時清空畫布
@@ -162,15 +164,11 @@ function drawing() {
   //處理物件之間的碰撞
   CollisionAmongObject();
   // 處理球與畫布間的碰撞
-  ball1.collide();
-  ball2.collide();
-  // 繪製與移動球
-  ball1.move();
-  ball1.draw("#000000");
-
-  ball2.move();
-  ball2.draw("#FF0000");
-  
+  for (let i = 0; i < balls.length; i++) {
+    balls[i].collide();
+    balls[i].move();
+    balls[i].draw(colors[i]);
+  }
 
   // 顯示地圖所有磚塊
   for(let i=0; i<bars.length; i++){
