@@ -2,7 +2,7 @@ var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
 
 let isBallLaunched = false;
-//let isStarGenerated = false;
+let isStarState = false;
 // Paddle 物件描述
 class Paddle {
   constructor(x, y, length, width) {
@@ -62,8 +62,8 @@ class Star {
     var horn = 5; // 画5个角
     var angle = 360/horn; // 五个角的度数
     // 两个圆的半径
-    var R = 50;
-    var r = 20;
+    var R = 25;
+    var r = 10;
     // 坐标
     for (var i = 0; i < horn; i++) {
         // 角度转弧度：角度/180*Math.PI
@@ -96,13 +96,14 @@ class Star {
       this.y - this.size <= paddle.y + paddle.width
     ) {
       //星星碰到paddle會變色
-      paddle.draw("#0000FF");
       // Paddle的length加長50，但不超過某個最大值（例如，canvas.width - 10）
-      if(paddle.length <= 150){
+      if(paddle.length < 150){
         paddle.length += 50;
+        isStarState = true;
         // 設定五秒後恢復原狀
         setTimeout(() => {
           paddle.length -= 50;
+          isStarState = false;
         }, 5000);
       }
       // 移除碰撞的星星
@@ -167,7 +168,7 @@ class Ball {
   }
 }
 
-//Bar 物件描述
+//Bar 物件描述  
 class Bar {
   constructor(x, y, dx, dy, length, width) {
     this.x = x;
@@ -233,13 +234,13 @@ class Bar {
 //建立ball物件
 let balls = [];
 let ballHeight = 50;
-
+ 
 // 創建球的函數
 function createBall() {
   let randomX = Math.random() * 20;
-  let dx = 5 * Math.pow(-1, 1);
-  let dy = -5 * Math.pow(-1, 1);
-
+  //let dx = 5 * Math.pow(-1, 1);
+  //let dy = -5 * Math.pow(-1, 1);
+  let dx = -5,dy = 5;
   // 如果球還沒發射，則起始 y 座標為 paddle 上方
   let startY = isBallLaunched ? canvas.height - ballHeight : paddle.y - ballHeight;
    
@@ -330,7 +331,15 @@ function CollisionAmongObject() {
 
 //可以拿來控制球的顏色
 let colors = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF", "#FFA500", "#A52A2A", "#008000", "#800080"];
+let colorIndex = 0;  // 用於追蹤 colors 陣列的索引
 
+function changePaddleColor() {
+  // 當 isStarState 為 false 時，循環變更 paddle 的顏色
+    paddle.draw(colors[colorIndex]);
+    colorIndex = (colorIndex + 1) % colors.length;  // 循環選擇 colors 陣列的下一個顏色
+}
+// 設定每 1000 毫秒執行一次 changePaddleColor 函數
+setInterval(changePaddleColor, 1000);
 function drawing() {
   // 即時清空畫布
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -349,7 +358,12 @@ function drawing() {
     stars[i].draw();
   }
   // 繪製 paddle
-  paddle.draw("#000000");
+  if(isStarState){
+    changePaddleColor();
+  }
+  else{
+    paddle.draw("#0000FF");
+  }
   // 顯示地圖所有磚塊
   for(let i=0; i<bars.length; i++){
     for (let j = 0; j < bars[i].length; j++) {
