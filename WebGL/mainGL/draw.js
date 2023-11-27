@@ -67,14 +67,14 @@ class Bar {
   }
 }
 //建立ball物件
-//let ball1 = new Ball(canvas.width / 2, canvas.height - 100, 5, -5, 25);
-//let ball2 = new Ball(canvas.width / 2, canvas.height - 300, -5, 5, 25);
-
 let balls = [];
-let ballHeight = 100;
+let ballHeight = 50;
 //此迴圈i可以控制球的數量
-for(let i = 1; i <= 2; i++){
-  balls.push(new Ball(canvas.width / 2, canvas.height - ballHeight*i, 2.5, -2.5, 25));
+for(let i = 1; i <= 10; i++){   
+  let randomX = Math.random() * 20; // 產生 0 到 700 之間的隨機數
+  let dx = 2.5 * Math.pow(-1, i); // 將 2.5 乘上 -1 的 i 次方，產生不同方向
+  let dy = -2.5 * Math.pow(-1, i); // 將 -2.5 乘上 -1 的 i 次方，產生不同方向
+  balls.push(new Ball(canvas.width / randomX, canvas.height - ballHeight*i, dx, dy, 10));
 }
 //磚塊物件的相對位置座標
 let barLength = 100;
@@ -89,7 +89,7 @@ for (let i = 1; i <= 8; i++) {
   let row = [];
 
   // 循環每一行中的物件
-  for (let j = 1; j <= 6; j++) {
+  for (let j = 1; j <= 9; j++) {
     let bar = new Bar(
       canvas.width - (9 - i) * barLength,
       canvas.height - barHeigth - heigthMultiple * j,
