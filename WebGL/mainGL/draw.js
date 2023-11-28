@@ -10,6 +10,8 @@ let isHeartState = false;
 let isStarState = false;
 //檢查遊戲是否結束
 let isGameOver = false;
+//是否勝利
+let isWin = false;
 // Paddle 物件描述
 class Paddle {
   constructor(x, y, length, width) {
@@ -424,18 +426,18 @@ createBall();
 let barLength = 150;
 let barHeigth = 500;
 //高度倍數
-let heigthMultiple = 40;
+let heigthMultiple = 60;
 // 地圖磚塊物件
 let bars = [];
 
 // 用2D array快速建立磚塊物件
-for (let i = 1; i <= 8; i++) {
+for (let i = 1; i <= 5; i++) {
   let row = [];
 
   // 循環每一行中的物件
-  for (let j = 1; j <= 9; j++) {
+  for (let j = 1; j <= 5; j++) {
     let bar = new Bar(
-      canvas.width - ((9 - i) * barLength),
+      canvas.width+450 - ((9 - i) * barLength),
       canvas.height - barHeigth - heigthMultiple * j,
       -1,
       0,
@@ -523,9 +525,20 @@ function changeBallsColor() {
 setInterval(changePaddleColor, 1000);
 setInterval(changeBallsColor, 1000);
 
+
+
 function drawing() {
+  //失敗判定
   if(isGameOver){
     printGameOver();
+    //防止paddle結束時還有殘影
+    paddle = null;
+    //停止interval執行
+    clearInterval(interval);
+  }
+  // 勝利判定
+  if (isWin) {
+    printWin();
     //防止paddle結束時還有殘影
     paddle = null;
     //停止interval執行
@@ -579,10 +592,23 @@ function drawing() {
       bars[i][j].draw("#000000");
     }
   }
-}
 
+  //只有當 bars 中的每一行都是空的時候（每個 row 的長度都是零），isWin 才會被設置為 true。
+  if(bars.every(row => row.length === 0)){
+    isWin = true;
+  }
+
+}
+function printWin(){
+    // 遊戲勝利時繪製標誌
+    ctx.font = "30px Arial";
+    ctx.fillStyle = "#00FF00";
+    ctx.fillText("YOU WIN!!", canvas.width / 2 - 100 , canvas.height / 2);
+}
 function restartGame() {
   // 重置遊戲相關變數
+  isWin = false;
+
   isGameOver = false;
   isHeartState = false;
   isStarState - false;
