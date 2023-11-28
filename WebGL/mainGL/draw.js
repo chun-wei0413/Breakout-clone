@@ -1,11 +1,11 @@
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
-
-
 //當按鈕被點擊時，restartGame 函數會被調用，這個函數將重新初始化遊戲相關的變數
 document.getElementById("restartButton").addEventListener("click", restartGame);
 //檢查左鍵是否按下發射球
 let isBallLaunched = false;
+//檢查是否在吃愛心的狀態
+let isHeartState = false;
 //檢查是否在吃星星的狀態
 let isStarState = false;
 //檢查遊戲是否結束
@@ -53,8 +53,8 @@ class Paddle {
 
 // 建立 paddle 物件
 let paddle = new Paddle(canvas.width / 2 - 50, canvas.height - 150, 100, 10);
-//用來設定每次撿到星星重新計時
-let starEffectTimeout;
+
+
 //建立星星物件
 class Star {
   constructor(x, y, size) {
@@ -110,11 +110,10 @@ class Star {
         isStarState = true;
         // 設定五秒後恢復原狀
         // 每次碰撞都重新計時
-        clearTimeout(starEffectTimeout);
-        starEffectTimeout = setTimeout(() => {
+        setTimeout(() => {
           paddle.length -= 50;
           isStarState = false;
-        }, 5000);
+        }, 10000);
       }
       // 移除碰撞的星星
       stars.splice(stars.indexOf(this), 1);
@@ -124,6 +123,9 @@ class Star {
 }
 
 let stars = [];  //存放星星的陣列
+//建立星星物件
+
+
 
 // 監聽滑鼠移動事件
 canvas.addEventListener("mousemove", (event) => {
@@ -138,6 +140,67 @@ canvas.addEventListener("mousedown", () => {
   isBallLaunched = true;
 });
 
+//笑臉物件
+class Smile {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.dy = 2;
+  }
+  //參考網址 https://blog.csdn.net/m0_57301042/article/details/127882435
+  draw() {
+    // 繪製smile
+    ctx.beginPath();
+    //畫臉的圓，將半徑縮小為原來的 1/4
+    ctx.arc(this.x, this.y, 50 / 4, Math.PI * 2, 0);
+    ctx.moveTo(this.x + 35 / 4, this.y); // 將移動座標也縮小為原來的 1/4
+    //畫嘴巴
+    ctx.arc(this.x, this.y, 35 / 4, 0, Math.PI);
+    ctx.moveTo(this.x + 35 / 4, this.y - 20 / 4); // 將移動座標也縮小為原來的 1/4
+    //畫右眼
+    ctx.arc(this.x + 25 / 4, this.y - 20 / 4, 10 / 4, 0, Math.PI, true);
+    ctx.moveTo(this.x - 15 / 4, this.y - 20 / 4); // 將移動座標也縮小為原來的 1/4
+    //畫左眼
+    ctx.arc(this.x - 25 / 4, this.y - 20 / 4, 10 / 4, 0, Math.PI, true);
+    ctx.strokeStyle = "#000000";
+    ctx.stroke();
+    // closePath：关闭路径，将路径的终点与起点相连
+    ctx.closePath();
+    //繪製外框
+  }
+
+  move() {
+    // 愛心往下移動
+    this.y += this.dy;
+  }
+
+  collide(paddle) {
+    // 檢測愛心與Paddle的碰撞
+    if (
+      this.x + (50/4 * Math.sqrt(2)) >= paddle.x &&
+      this.x - (50/4 * Math.sqrt(2)) <= paddle.x + paddle.length &&
+      this.y + (50/4 * Math.sqrt(2)) >= paddle.y &&
+      this.y - (50/4 * Math.sqrt(2)) <= paddle.y + paddle.width
+    ) {
+      //星星碰到paddle會變色
+      // Paddle的length加長50，但不超過某個最大值（例如，canvas.width - 10）
+      if(balls[0].dx !== 5 && balls[0].dy !== 5){
+        balls[0].dx *=2;
+        balls[0].dy *=2;
+        // 設定五秒後恢復原狀
+        // 每次碰撞都重新計時
+        setTimeout(() => {
+          balls[0].dx /= 2;
+          balls[0].dy /= 2;
+        }, 10000);
+      }
+      // 移除碰撞的星星
+      smiles.splice(smiles.indexOf(this), 1);
+    }
+  }
+}
+
+let smiles = [];//存放愛心陣列
 //main Ball 物件描述
 class Ball {
   constructor(x, y, dx, dy, radius) {
@@ -182,6 +245,68 @@ class Ball {
   }
 }
 
+//建立ball物件
+let balls = [];
+let ballHeight = 50;
+//先產生一顆主球
+balls.push(new Ball(0, 0, 2.5, 2.5, 10));
+
+class Heart {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.dy = 2;
+  }
+  //參考網址 https://blog.csdn.net/m0_57301042/article/details/127882435
+  draw() {
+      // 繪製星星
+      ctx.beginPath();
+      ctx.moveTo(this.x,this.y);
+      //愛心右半邊
+      ctx.bezierCurveTo(this.x+10,this.y-20,this.x+40,this.y,this.x,this.y+20);
+      ctx.moveTo(this.x,this.y+20);
+      //愛心左半邊
+      ctx.bezierCurveTo(this.x-40,this.y,this.x-10,this.y-20,this.x,this.y);
+      // closePath：关闭路径，将路径的终点与起点相连
+      ctx.closePath();
+      ctx.fillStyle = "#FF0000";
+      ctx.fill();
+      //繪製外框
+      //ctx.stroke();
+  }
+
+  move() {
+    // 愛心往下移動
+    this.y += this.dy;
+  }
+
+  collide(paddle) {
+    // 檢測愛心與Paddle的碰撞
+    if (
+      this.x + 20 >= paddle.x &&
+      this.x - 20 <= paddle.x + paddle.length &&
+      this.y + 20 >= paddle.y &&
+      this.y - 20 <= paddle.y + paddle.width
+    ) {
+      //星星碰到paddle會變色
+      // Paddle的length加長50，但不超過某個最大值（例如，canvas.width - 10）
+        balls[0].radius = 20;
+        isHeartState = true;
+        // 設定五秒後恢復原狀
+        // 每次碰撞都重新計時
+        setTimeout(() => {
+          balls[0].radius=10;
+          isHeartState = false;
+        }, 10000);
+
+      // 移除碰撞的星星
+      hearts.splice(hearts.indexOf(this), 1);
+    }
+  }
+}
+
+let hearts = [];//存放愛心陣列
+
 //Bar 物件描述  
 class Bar {
   constructor(x, y, dx, dy, length, width) {
@@ -215,7 +340,7 @@ class Bar {
       this.dy = -this.dy;
     }
   }
-  collide1(ball) {
+  collideAndDrop(ball) {
     if (
       ball.x + ball.radius >= this.x &&
       ball.x - ball.radius <= this.x + this.length &&
@@ -231,11 +356,24 @@ class Bar {
 
             // 球反彈
             ball.dy = -ball.dy;
-
-            // 25% 的機率掉落星星
-            if (Math.random() < 0.5) {
-              let star = new Star(this.x + this.length / 2, this.y + this.width / 2, 20);
-              stars.push(star);
+            
+            // 25% 的機率掉落道具
+            if (Math.random() <= 0.5) {
+              let Probability = Math.random();
+              //Probability <= 0.33
+              if(Probability <= 0.33){
+                let star = new Star(this.x + this.length / 2, this.y + this.width / 2, 20);
+                stars.push(star);
+              }
+              //Probability > 0.33 && Probability <= 0.66
+              else if(Probability > 0.33 && Probability <= 0.66){
+                let heart = new Heart(this.x + this.length / 2, this.y + this.width / 2);
+                hearts.push(heart);
+              }
+              else{
+                let smile = new Smile(this.x + this.length / 2, this.y + this.width / 2);
+                smiles.push(smile);
+              }
             }
 
             return; // 當找到並移除 bar 時，結束迴圈
@@ -244,12 +382,20 @@ class Bar {
       }
     }
   }
+  //專門給路障的碰撞，不會消失也不掉寶
+  collideForMoveBar(ball){
+    if (
+      ball.x + ball.radius >= this.x &&
+      ball.x - ball.radius <= this.x + this.length &&
+      ball.y + ball.radius >= this.y &&
+      ball.y - ball.radius <= this.y + this.width
+    ) {
+      ball.dy = -ball.dy;
+    }
+  }
 }
-//建立ball物件
-let balls = [];
-let ballHeight = 50;
-//先產生一顆主球
-balls.push(new Ball(0, 0, 2.5, 2.5, 10));
+//路障
+let moveBar = new Bar(canvas.width / 2 - 50, canvas.height - 400, 5,0 , 100, 10);
 // 創建球的函數
 /*function createBall() {
   let randomX = Math.random() * 20;
@@ -275,10 +421,10 @@ createBall();
 */
 
 //磚塊物件的相對位置座標
-let barLength = 100;
-let barHeigth = 700;
+let barLength = 150;
+let barHeigth = 500;
 //高度倍數
-let heigthMultiple = 20;
+let heigthMultiple = 40;
 // 地圖磚塊物件
 let bars = [];
 
@@ -289,7 +435,7 @@ for (let i = 1; i <= 8; i++) {
   // 循環每一行中的物件
   for (let j = 1; j <= 9; j++) {
     let bar = new Bar(
-      canvas.width - (9 - i) * barLength,
+      canvas.width - ((9 - i) * barLength),
       canvas.height - barHeigth - heigthMultiple * j,
       -1,
       0,
@@ -311,14 +457,21 @@ function CollisionAmongObject() {
       let star = stars[i];
       star.collide(paddle);
     }
-    
+    for(let i =0; i < hearts.length; i++){
+      let heart = hearts[i];
+      heart.collide(paddle);
+    }
+    for(let i =0; i < smiles.length; i++){
+      let smile = smiles[i];
+      smile.collide(paddle);
+    }
     for (let i = 0; i < balls.length; i++) {
       let ball = balls[i];
       paddle.collide(ball);
     }
     // 检测球之间的相撞
     for (let i = 0; i < balls.length; i++) {
-      for (let j = i + 1; j < balls.length; j++) {
+      /*for (let j = i + 1; j < balls.length; j++) {
         let ball1 = balls[i];
         let ball2 = balls[j];
         let distanceX = ball1.x - ball2.x;
@@ -334,16 +487,18 @@ function CollisionAmongObject() {
           ball2.dx = tempDx;
           ball2.dy = tempDy;
         }
-      }
+      }*/
 
       // 检测球与Bar的碰撞
       let ball = balls[i];
       for (let k = 0; k < bars.length; k++) {
         for (let j = 0; j < bars[k].length; j++) {
           let bar = bars[k][j];
-          bar.collide1(ball);
+          bar.collideAndDrop(ball);
         }
       }
+
+      moveBar.collideForMoveBar(ball);
     } 
 }
 
@@ -356,8 +511,18 @@ function changePaddleColor() {
     paddle.draw(colors[colorIndex]);
     colorIndex = (colorIndex + 1) % colors.length;  // 循環選擇 colors 陣列的下一個顏色
 }
+
+
+
+function changeBallsColor() {
+  // 當 isStarState 為 false 時，循環變更 paddle 的顏色
+    balls[0].draw(colors[colorIndex]);
+    colorIndex = (colorIndex + 1) % colors.length;  // 循環選擇 colors 陣列的下一個顏色
+}
 // 設定每 1000 毫秒執行一次 changePaddleColor 函數
 setInterval(changePaddleColor, 1000);
+setInterval(changeBallsColor, 1000);
+
 function drawing() {
   if(isGameOver){
     printGameOver();
@@ -370,6 +535,7 @@ function drawing() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   //處理物件之間的碰撞
   CollisionAmongObject();
+  
   // 處理球與畫布間的碰撞
   for (let i = 0; i < balls.length; i++) {
     balls[i].collide();
@@ -377,18 +543,34 @@ function drawing() {
     balls[i].draw(colors[i]);
   }
   // 繪製star
-  // 處理球與畫布間的碰撞
   for (let i = 0; i < stars.length; i++) {
     stars[i].move();
     stars[i].draw();
   }
-  // 繪製 paddle
+  //繪製愛心
+  for (let i = 0; i < hearts.length; i++) {
+    hearts[i].move();
+    hearts[i].draw();
+  }
+  //繪製笑臉
+  for (let i = 0; i < smiles.length; i++) {
+    smiles[i].move();
+    smiles[i].draw();
+  }
+  //路障繪製與移動
+  moveBar.draw("#000000");
+  moveBar.collide();
+  moveBar.move();
+  // paddle吃寶物特效
   if(isStarState){
     changePaddleColor();
   }
   else{
     paddle.draw("#0000FF");
   }
+  //ball 吃寶物特效
+
+
   // 顯示地圖所有磚塊
   for(let i=0; i<bars.length; i++){
     for (let j = 0; j < bars[i].length; j++) {
@@ -402,6 +584,8 @@ function drawing() {
 function restartGame() {
   // 重置遊戲相關變數
   isGameOver = false;
+  isHeartState = false;
+  isStarState - false;
   document.location.reload();
 
 }
