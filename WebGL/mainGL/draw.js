@@ -441,11 +441,11 @@ let heigthMultiple = 60;
 let bars = [];
 
 // 用2D array快速建立磚塊物件
-for (let i = 1; i <= 1; i++) {
+for (let i = 1; i <= 5; i++) {
   let row = [];
 
   // 循環每一行中的物件
-  for (let j = 1; j <= 1; j++) {
+  for (let j = 1; j <= 3; j++) {
     let bar = new Bar(
       canvas.width+450 - ((9 - i) * barLength),
       canvas.height - barHeigth - heigthMultiple * j,

@@ -411,8 +411,15 @@ class Bar {
     }
   }
 }
-//路障
-let moveBar = new Bar(canvas.width / 2 - 50, canvas.height - 400, 5,0 , 100, 10);
+let moveBars=[];
+//設定三個路障
+let moveBar = new Bar(canvas.width / 2 - 200 , canvas.height - 400 , 4,0 , 50, 10);
+moveBars.push(moveBar);
+moveBar = new Bar(canvas.width / 2 + 100 , canvas.height - 400 - 40 , 4,0 , 50, 10);
+moveBars.push(moveBar);
+moveBar = new Bar(canvas.width / 2 + 300 , canvas.height - 400 -80, 4,0 , 50, 10);
+moveBars.push(moveBar);
+
 // 創建球的函數
 /*function createBall() {
   let randomX = Math.random() * 20;
@@ -446,11 +453,11 @@ let heigthMultiple = 60;
 let bars = [];
 
 // 用2D array快速建立磚塊物件
-for (let i = 1; i <= 1; i++) {
+for (let i = 1; i <= 5; i++) {
   let row = [];
 
   // 循環每一行中的物件
-  for (let j = 1; j <= 1; j++) {
+  for (let j = 1; j <= 6; j++) {
     let bar = new Bar(
       canvas.width+450 - ((9 - i) * barLength),
       canvas.height - barHeigth - heigthMultiple * j,
@@ -514,8 +521,9 @@ function CollisionAmongObject() {
           bar.collideAndDrop(ball);
         }
       }
-
-      moveBar.collideForMoveBar(ball);
+      for(let i=0; i< moveBars.length;i++){
+        moveBars[i].collideForMoveBar(ball);
+      }
     } 
 }
 
@@ -590,9 +598,12 @@ function drawing() {
     smiles[i].draw();
   }
   //路障繪製與移動
-  moveBar.draw("#000000");
-  moveBar.collide();
-  moveBar.move();
+  for (let i = 0; i < moveBars.length; i++) {
+    moveBars[i].draw("#000000");
+    moveBars[i].collide();
+    moveBars[i].move();
+  }
+
   // paddle吃寶物特效
   if(isStarState){
     changePaddleColor();
