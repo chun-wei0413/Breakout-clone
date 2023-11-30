@@ -431,7 +431,7 @@ let heigthMultiple = 60;
 let bars = [];
 
 // 用2D array快速建立磚塊物件
-for (let i = 1; i <= 3; i++) {
+for (let i = 1; i <= 2; i++) {
   let row = [];
 
   // 循環每一行中的物件
@@ -539,14 +539,6 @@ function drawing() {
   // 勝利判定
   if (isWin) {
     printWin();
-    printNextLevel();
-    // Listen for the 'a' key press
-    document.addEventListener("keydown", function(event) {
-        if(event.key === 'a') {
-            // Redirect to level2.html
-            window.location.href = 'level2.html';
-        }
-    });
     //防止paddle結束時還有殘影
     paddle = null;
     //停止interval執行
@@ -609,7 +601,7 @@ function drawing() {
 }
 function printNextLevel(){
       ctx.font = "20px Arial";
-      ctx.fillStyle = "#000000";
+      ctx.fillStyle = "#00FF00";
       ctx.fillText("Press 'a' to next level", canvas.width / 2 - 120 , canvas.height / 2 + 40);
 }
 function printWin(){

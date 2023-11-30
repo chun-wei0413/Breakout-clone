@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Gamedev Canvas Workshop</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      padding: 0;
+      margin: 0;
+    }
+
+    body {
+      background-color: rgb(255, 255, 255);
+      /* 灰色背景 */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+
+    canvas {
+      background: #ffc0cb;
+      /* canvas 背景色 */
+      display: block;
+      margin: 1rem;
+      border: 10px solid #14a350;
+      /* 邊框 */
+    }
+    
+ 
+  </style>
+</head>
+
+<body>
+  <canvas id="myCanvas" width="820" height="900"></canvas>
+  <button id="restartButton">再玩一次</button>
+  <script src="draw2.js"></script>
+</body>
+
+</html>
