@@ -431,11 +431,11 @@ let heigthMultiple = 60;
 let bars = [];
 
 // 用2D array快速建立磚塊物件
-for (let i = 1; i <= 2; i++) {
+for (let i = 1; i <= 1; i++) {
   let row = [];
 
   // 循環每一行中的物件
-  for (let j = 1; j <= 2; j++) {
+  for (let j = 1; j <= 1; j++) {
     let bar = new Bar(
       canvas.width+450 - ((9 - i) * barLength),
       canvas.height - barHeigth - heigthMultiple * j,
@@ -599,16 +599,12 @@ function drawing() {
   }
 
 }
-function printNextLevel(){
-      ctx.font = "20px Arial";
-      ctx.fillStyle = "#00FF00";
-      ctx.fillText("Press 'a' to next level", canvas.width / 2 - 120 , canvas.height / 2 + 40);
-}
+
 function printWin(){
     // 遊戲勝利時繪製標誌
     ctx.font = "30px Arial";
-    ctx.fillStyle = "#00FF00";
-    ctx.fillText("YOU WIN!!", canvas.width / 2 - 100 , canvas.height / 2);
+    ctx.fillStyle = "#000000";
+    ctx.fillText("YOU FINISH THE GAME!!", (canvas.width / 2)-200 , canvas.height / 2);
 }
 function restartGame() {
   // 重置遊戲相關變數
