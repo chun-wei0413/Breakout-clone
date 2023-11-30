@@ -2,6 +2,8 @@ var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
 //當按鈕被點擊時，restartGame 函數會被調用，這個函數將重新初始化遊戲相關的變數
 document.getElementById("restartButton").addEventListener("click", restartGame);
+//顯示分數
+let score = 0;
 //檢查左鍵是否按下發射球
 let isBallLaunched = false;
 //檢查是否在吃愛心的狀態
@@ -119,6 +121,7 @@ class Star {
       }
       // 移除碰撞的星星
       stars.splice(stars.indexOf(this), 1);
+      score+=10;
     }
   }
 
@@ -198,6 +201,12 @@ class Smile {
       }
       // 移除碰撞的星星
       smiles.splice(smiles.indexOf(this), 1);
+      if(score>=5){
+        score-=5;
+      }
+      else{
+        score=0;
+      }
     }
   }
 }
@@ -303,6 +312,7 @@ class Heart {
 
       // 移除碰撞的星星
       hearts.splice(hearts.indexOf(this), 1);
+      score+=10;
     }
   }
 }
@@ -355,7 +365,7 @@ class Bar {
           if (bars[i][j] === this) {
             // 移除這個 bar
             bars[i].splice(j, 1);
-
+            score+=10;
             // 球反彈
             ball.dy = -ball.dy;
             
@@ -431,11 +441,11 @@ let heigthMultiple = 60;
 let bars = [];
 
 // 用2D array快速建立磚塊物件
-for (let i = 1; i <= 3; i++) {
+for (let i = 1; i <= 1; i++) {
   let row = [];
 
   // 循環每一行中的物件
-  for (let j = 1; j <= 2; j++) {
+  for (let j = 1; j <= 1; j++) {
     let bar = new Bar(
       canvas.width+450 - ((9 - i) * barLength),
       canvas.height - barHeigth - heigthMultiple * j,
@@ -536,24 +546,27 @@ function drawing() {
     //停止interval執行
     clearInterval(interval);
   }
-  // 勝利判定
-  if (isWin) {
-    printWin();
-    printNextLevel();
-    // Listen for the 'a' key press
-    document.addEventListener("keydown", function(event) {
-        if(event.key === 'a') {
-            // Redirect to level2.html
-            window.location.href = 'level2.html';
-        }
-    });
-    //防止paddle結束時還有殘影
-    paddle = null;
-    //停止interval執行
-    clearInterval(interval);
-  }
+//勝利判定
+if (isWin) {
+  printWin();
+  printNextLevel();
+  // 在遊戲結束處或者適當的地方
+  localStorage.setItem("score", score.toString());
+  // Listen for the 'a' key press
+  document.addEventListener("keydown", function(event) {
+    if (event.key === 'a') {
+      // Redirect to level2.html
+      window.location.href = 'level2.html';
+    }
+  });
+  // 防止 paddle 結束時還有殘影
+  paddle = null;
+  clearInterval(interval);
+}
   // 即時清空畫布
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  //顯示分數
+  printScore();
   //處理物件之間的碰撞
   CollisionAmongObject();
   
@@ -607,24 +620,30 @@ function drawing() {
   }
 
 }
+function printScore(){
+    // 顯示分數
+    ctx.font = "20px Arial";
+    ctx.fillStyle = "#000000";
+    ctx.fillText("Score: " + score, canvas.width - 100, 30);
+}
 function printNextLevel(){
       ctx.font = "20px Arial";
       ctx.fillStyle = "#000000";
-      ctx.fillText("Press 'a' to next level", canvas.width / 2 - 120 , canvas.height / 2 + 40);
+      ctx.fillText("Press 'a' to next level", canvas.width / 2 - 120 , canvas.height / 3 + 40);
 }
 function printWin(){
     // 遊戲勝利時繪製標誌
     ctx.font = "30px Arial";
     ctx.fillStyle = "#00FF00";
-    ctx.fillText("YOU WIN!!", canvas.width / 2 - 100 , canvas.height / 2);
+    ctx.fillText("YOU WIN!!", canvas.width / 2 - 100 , canvas.height / 3);
 }
 function restartGame() {
   // 重置遊戲相關變數
   isWin = false;
-
   isGameOver = false;
   isHeartState = false;
   isStarState - false;
+  score=0;
   document.location.reload();
 
 }

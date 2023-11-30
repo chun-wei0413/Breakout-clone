@@ -1,7 +1,19 @@
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
 //當按鈕被點擊時，restartGame 函數會被調用，這個函數將重新初始化遊戲相關的變數
-document.getElementById("restartButton").addEventListener("click", restartGame);
+document.getElementById("returnButton").addEventListener("click", returnGame);
+// 載入下一個關卡的地方
+let savedScore = localStorage.getItem("score");
+let score;
+if (savedScore !== null) {
+  // 如果有存儲的分數，使用它
+  score = parseInt(savedScore, 10);
+  // 清除存儲的分數，避免下次再次使用
+  localStorage.removeItem("score");
+} else {
+  // 如果沒有存儲的分數，進行默認的初始化
+  score = 0;
+}
 //檢查左鍵是否按下發射球
 let isBallLaunched = false;
 //檢查是否在吃愛心的狀態
@@ -119,6 +131,7 @@ class Star {
       }
       // 移除碰撞的星星
       stars.splice(stars.indexOf(this), 1);
+      score+=10;
     }
   }
 
@@ -198,6 +211,7 @@ class Smile {
       }
       // 移除碰撞的星星
       smiles.splice(smiles.indexOf(this), 1);
+      score-=5;
     }
   }
 }
@@ -303,6 +317,7 @@ class Heart {
 
       // 移除碰撞的星星
       hearts.splice(hearts.indexOf(this), 1);
+      score+=10;
     }
   }
 }
@@ -355,7 +370,7 @@ class Bar {
           if (bars[i][j] === this) {
             // 移除這個 bar
             bars[i].splice(j, 1);
-
+            score+=10;
             // 球反彈
             ball.dy = -ball.dy;
             
@@ -528,6 +543,7 @@ setInterval(changeBallsColor, 1000);
 
 
 function drawing() {
+
   //失敗判定
   if(isGameOver){
     printGameOver();
@@ -538,14 +554,17 @@ function drawing() {
   }
   // 勝利判定
   if (isWin) {
-    printWin();
-    //防止paddle結束時還有殘影
-    paddle = null;
-    //停止interval執行
-    clearInterval(interval);
+      printFinalScore();
+      printWin();
+      // 防止 paddle 結束時還有殘影
+      paddle = null;
+      // 停止 interval 執行
+      clearInterval(interval);
   }
   // 即時清空畫布
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  //顯示分數函式
+  printScore();
   //處理物件之間的碰撞
   CollisionAmongObject();
   
@@ -599,21 +618,33 @@ function drawing() {
   }
 
 }
-
+function printScore(){
+  // 顯示分數
+  ctx.font = "20px Arial";
+  ctx.fillStyle = "#000000";
+  ctx.fillText("Score: " + score, canvas.width - 100, 30);
+}
+function printFinalScore(){ 
+  // 顯示分數 
+  ctx.font = "20px Arial"; 
+  ctx.fillStyle = "#000000";
+  ctx.fillText("Total Score:"+score ,(canvas.width / 2)-100, canvas.height / 3 + 50);
+}
 function printWin(){
     // 遊戲勝利時繪製標誌
     ctx.font = "30px Arial";
     ctx.fillStyle = "#000000";
-    ctx.fillText("YOU FINISH THE GAME!!", (canvas.width / 2)-200 , canvas.height / 2);
+    ctx.fillText("YOU FINISH THE GAME!!", (canvas.width / 2)-200 , canvas.height / 3);
 }
-function restartGame() {
+function returnGame() {
   // 重置遊戲相關變數
   isWin = false;
 
   isGameOver = false;
   isHeartState = false;
   isStarState - false;
-  document.location.reload();
+  // 使用 window.location.href 跳轉回 index.html
+  window.location.href = "index.html";
 
 }
 function printGameOver(){
