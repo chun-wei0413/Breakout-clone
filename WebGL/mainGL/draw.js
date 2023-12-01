@@ -592,7 +592,7 @@ if (isWin) {
     smiles[i].draw();
   }
   //路障繪製與移動
-  moveBar.draw("#000000");
+  moveBar.draw(colors[4]);
   moveBar.collide();
   moveBar.move();
   // paddle吃寶物特效

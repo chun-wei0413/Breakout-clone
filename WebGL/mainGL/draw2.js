@@ -599,7 +599,7 @@ function drawing() {
   }
   //路障繪製與移動
   for (let i = 0; i < moveBars.length; i++) {
-    moveBars[i].draw("#000000");
+    moveBars[i].draw(colors[i+3]);
     moveBars[i].collide();
     moveBars[i].move();
   }
