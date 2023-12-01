@@ -538,15 +538,8 @@ function changePaddleColor() {
 }
 
 
-
-function changeBallsColor() {
-  // 當 isStarState 為 false 時，循環變更 paddle 的顏色
-    balls[0].draw(colors[colorIndex]);
-    colorIndex = (colorIndex + 1) % colors.length;  // 循環選擇 colors 陣列的下一個顏色
-}
 // 設定每 1000 毫秒執行一次 changePaddleColor 函數
 setInterval(changePaddleColor, 1000);
-setInterval(changeBallsColor, 1000);
 
 
 
